@@ -1,0 +1,23 @@
+/* App.css */
+
+.container {
+  max-width: 800px;
+  margin: auto;
+}
+
+.card {
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+h5 {
+  margin: 0;
+  font-weight: bold;
+}
+
+.mb-4 {
+  margin-bottom: 1.5rem !important;
+}
