@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import InputGroup from 'react-bootstrap/InputGroup';
 import Form from 'react-bootstrap/Form'; // Add this line
 import api from '../services/api';
@@ -10,16 +10,18 @@ import './App.css'; // Import your custom CSS file
 function App() {
   const [statements, setStatements] = useState([])
   const [showModal, setShowModal] = useState(false);
+  const [isUserId, setIsUserid] = useState(false)
   const [formData, setFormData] = useState({
     titulo: '',
     contenidoLargo: '',
-    userName: ''
+    userName: '',
+    userId: ""
   });
-
+  const [serch, setSerch] = useState("")
   useEffect(() => {
     const getDatos = async () => {
       try {
-        const res = await api.get("/api/statements");
+        const res = await api.get(`/api/statements?name=${serch}`);
         console.log(res); // Log the entire response
         setStatements(res.data);
       } catch (error) {
@@ -27,7 +29,7 @@ function App() {
       }
     }
     getDatos()
-  }, [])
+  }, [formData, serch])
 
   const handleClose = () => setShowModal(false);
   const handleShow = () => setShowModal(true);
@@ -40,6 +42,11 @@ function App() {
       [name]: value
     });
 
+  };
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSerch(e.target.value); // Update the search state
   };
 
   // Handle form submission
@@ -56,15 +63,24 @@ function App() {
       console.error('Error saving data:', error);
     }
   };
-
+  const handlerShowPost = (id) => {
+    setShowModal(true);
+    setIsUserid(true);
+    setFormData({
+      ...formData, // Keep existing form data
+      userId: id // Set userId to the passed id
+    });
+  };
   return (
     <>
       <div className="container mt-4">
         <InputGroup className="mb-3">
           <Form.Control
-            placeholder="Juan pepe san lorenzo"
-            aria-label="name"
+            placeholder="Buscar..."
+            aria-label="search"
             aria-describedby="basic-addon1"
+            value={serch}
+            onChange={handleSearchChange}
           />
         </InputGroup>
 
@@ -84,7 +100,7 @@ function App() {
                     {s?.user?.name ? <h5>De la persona {s.user.name}</h5> : ""}
                     {s.contenidoLargo}
                   </Card.Text>
-                  <Button variant="primary">Otra historia de la misma persona</Button>
+                  <Button variant="primary" onClick={() => handlerShowPost(s.user.id)}>Otra historia de la misma persona</Button>
                 </Card.Body>
               </Card>
             </div>
@@ -118,7 +134,7 @@ function App() {
                   placeholder="Ingrese el contenido"
                 />
               </Form.Group>
-              <Form.Group controlId="formBasicUser">
+              {isUserId ? "" : <Form.Group controlId="formBasicUser">
                 <Form.Label>De la persona</Form.Label>
                 <Form.Control
                   type="text"
@@ -127,7 +143,7 @@ function App() {
                   onChange={handleInputChange}
                   placeholder="Ingrese el nombre y de donde es"
                 />
-              </Form.Group>
+              </Form.Group>}
               <Modal.Footer>
                 <Button variant="secondary" onClick={handleClose}>
                   Cerrar
